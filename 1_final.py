@@ -124,7 +124,6 @@ def check_unsecured_vm_instances(subscription_ids):
                     else:
                         print(f"\n\t1. The virtual machine {vm.name} is not using a managed disk.")
 
-
                     # Data Access Auth Mode
                     if disk.data_access_auth_mode is None:
                         print(f"\n\t2. Potential Vulnerability for the disk {disk.name}: Data Access Authentication Mode is configured with weak or no authentication.")
@@ -345,6 +344,8 @@ def check_network(subscription_ids):
 #################################################################################################
 #################################################################################################
 #################################################################################################
+
+
 
 
 
