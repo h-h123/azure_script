@@ -38,33 +38,33 @@ def check_storage_account_vulnerabilities(subscription_ids):
 
                 # Ensure that 'Secure transfer required' is set to 'Enabled'
                 if not storage_account.enable_https_traffic_only:
-                    print(f"\n\t1. Vunerability: The Storage Account {storage_account.name} has not enforced Secure transfer (HTTPS).")
+                    print(f"\n\t1. Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                 else:
-                    print(f"\n\t1. The Storage Account {storage_account.name} has enforced Secure transfer (HTTPS).")
+                    print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
                 
                 #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
                 if not storage_account.encryption.require_infrastructure_encryption:
-                    print(f"\t2. Vunerability: The Storage Account {storage_account.name} has not enabled Infrastructure Encryption.")
+                    print(f"\t2. Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                 else:
-                    print(f"\t2. The Storage Account {storage_account.name} has enabled Infrastructure Encryption.")
+                    print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
 
                 #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
                 if storage_account.allow_blob_public_access:
-                    print(f"\t3. Vulnerability : The Storage Account {storage_account.name} with blob containers has allowed public access")
+                    print(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                 else:
-                    print(f"\t3. The Storage Account {storage_account.name} with blob containers has denied public access")
+                    print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
 
                 ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
                 if storage_account.public_network_access:
-                    print(f"\t4. Vulnerabilty: The Storage Account {storage_account.name} is allowing public traffic.")
+                    print(f"\t4. Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
                 else:
-                    print(f"\t4. The Storage Account {storage_account.name} has denied the public traffic")
+                    print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
 
                 #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
                 if not storage_account.minimum_tls_version == 'TLS1_2':
-                    print(f"\t5. Warning: The TLS (Transport Layer Security) protocol for the storage account {storage_account.name} secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS. And here it is {storage_account.minimum_tls_version}")
+                    print(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                 else:
-                    print(f"\t5. TLS (Transport Layer Security) protocol version for the storage account {storage_account.name} is",storage_account.minimum_tls_version)
+                    print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
 
 
                 if (

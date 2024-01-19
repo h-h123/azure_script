@@ -145,7 +145,7 @@ def check_network(subscription_ids):
                             print(f"\tNo Network Watchers found in the {resource_group.name} resource group. Network Watcher is disabled.")
                         else:
                             total_network_watcher_checks += 1
-                            print(f"\t{network_watcher.name} named Network Watcher is Enabled in the {resource_group.name} resource group.")
+                            print(f"\tNetwork Watcher named {network_watcher.name} is Enabled in the {resource_group.name} resource group.")
 
                         # Check if Network Watcher is  provisioned successfully
                         if network_watcher.provisioning_state.lower() == 'succeeded':

@@ -7,7 +7,8 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.resource import SubscriptionClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.web import WebSiteManagementClient
-
+from azure.mgmt.storage import StorageManagementClient
+from azure.storage.blob import BlobServiceClient
 
 
 
@@ -55,7 +56,7 @@ def write_vm_info_to_csv(writer, subscription_name, subscription_id, vm_name, op
 
 
 def check_unsecured_vm_instances(subscription_ids):
-    print(f"\n\n------Checking Vulnerabilities in Virtual Machines------")
+    print(f"\n\n------Detecting Vulnerabilities in Virtual Machines------")
     credential = DefaultAzureCredential()
     subscription_client = SubscriptionClient(credential)
     subscriptions = list(subscription_client.subscriptions.list())
@@ -115,45 +116,45 @@ def check_unsecured_vm_instances(subscription_ids):
                 for disk in disks_list:
                     # print(f"\nVM : ",vm.name)
                     # print(f"Disk Name: {disk.name}")
-                    print(f"\nChecking for {vm.name} VM: ")
+                    print(f"\nChecking for VM '{vm.name}':  ")
                     # check_disk_vulnerability_warning_scenarios(disk)
 
                     # Virtual Machines Not Utilizing Managed Disks
                     if disk.type:
-                        print(f"\n\t1. The virtual machine: {vm.name} is using a managed disk: {disk.name}.")
+                        print(f"\n\t1. The virtual machine '{vm.name}' is using a managed disk '{disk.name}'.")
                     else:
-                        print(f"\n\t1. The virtual machine {vm.name} is not using a managed disk.")
+                        print(f"\n\t1. Warning: The virtual machine '{vm.name}' is not using a managed disk.")
 
                     # Data Access Auth Mode
                     if disk.data_access_auth_mode is None:
-                        print(f"\n\t2. Potential Vulnerability for the disk {disk.name}: Data Access Authentication Mode is configured with weak or no authentication.")
+                        print(f"\n\t2. Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
                         #print(f"\tRisk: Unauthorized users may gain access to sensitive disk data, leading to potential data breaches.")
                         #print(f"\tRecommendation: Ensure strong authentication methods, such as Azure AD/ Entra ID credentials, are enforced.")
                     else:
-                        print(f"\n\t2. Data Access Authentication Mode is configured (Secure) for disk: {disk.name}")
+                        print(f"\n\t2. Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
 
                     # Encryption Settings
                     if not disk.encryption:
-                        print(f"\n\t3. Potential Vulnerability for the disk {disk.name}: Encryption settings are not configured.")
+                        print(f"\n\t3. Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                     else:
-                        print(f"\n\t3. Encryption settings for the disk {disk.name} are configured.")
+                        print(f"\n\t3. Encryption settings for the disk '{disk.name}' are configured.")
 
                     # Optimized for Frequent Attach
                     if disk.optimized_for_frequent_attach and 'sensitive_data' in disk.tags:
-                        print(f"\n\t4. Warning: Disk {disk.name} is optimized for frequent attachment, but it contains sensitive data.")
+                        print(f"\n\t4. Warning: Disk '{disk.name}' is optimized for frequent attachment, but it contains sensitive data.")
                         #print(f"\tRisk: Frequent attaching may expose the disk to unintended access, increasing the risk of data compromise.")
                         #print(f"\tRecommendation: Assess the need for frequent attachment and optimize performance accordingly. Consider encryption for sensitive data.")
                     else:
-                        print(f"\n\t4. The disk {disk.name} is not configured for frequent attachment optimization or does not contain sensitive data.")
+                        print(f"\n\t4. The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                         #print(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")
 
                     # Bursting Enabled Time
                     if disk.bursting_enabled_time and disk.bursting_enabled_time.startswith("peak_hours"):
-                        print(f"\n\t5. Warning for the disk {disk.name}: Bursting is currently enabled during peak operational hours.")
+                        print(f"\n\t5. Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
                         #print(f"\tRisk: Bursting might consume additional resources, impacting overall system performance during peak hours.")
                         #print(f"\tRecommendation: Schedule bursting during non-peak hours and monitor resource utilization to avoid performance degradation.")
                     else:
-                        print(f"\n\t5. Bursting in the disk {disk.name} is either not enabled or not configured for peak operational hours.")
+                        print(f"\n\t5. Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
 
                 # Check if all conditions are met before flagging the VM as unsecured
                 if has_public_ip_and_open_to_all and overly_permissive_nsg_rule and misconfigured_security_rule:
@@ -171,7 +172,7 @@ def check_unsecured_vm_instances(subscription_ids):
                 print("\tTotal VMs checked:", checked_count)
                 print("\tDetected unsecured VMs:", len(insecure_vms))
                 print("\tInsecure VMs:", insecure_vms)
-                print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------")  # Add a newline for better readability
+                print("--------------------------------------------------------------------------------------------------------------------------------------------------------------------")  # Add a newline for better readability
 
 
 
@@ -225,7 +226,7 @@ def is_address_prefix_star(rule):
 
 
 def check_network(subscription_ids):
-    print(f"------Checking Vulnerabilities in Networking------")
+    print(f"------Detecting Vulnerabilities in Networking------")
     total_nsg_checks = 0
     detected_nsg_count = 0
     total_network_watcher_checks = 0
@@ -252,13 +253,13 @@ def check_network(subscription_ids):
                     nsgs = network_client.network_security_groups.list(resource_group_name=resource_group.name)
 
                     for nsg in nsgs:
-                        print(f"\nChecking NSG Vulnerabilities in {resource_group.name} Resource Group:\t")
+                        print(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
 
                         if not nsg:
-                            print(f"No NSGs found in the {resource_group.name} resource group.")
+                            print(f"No NSGs found in the '{resource_group.name}' resource group.")
                         else:
                             total_nsg_checks += 1
-                            print(f"\tNSG named {nsg.name} found in the {resource_group.name} resource group.")
+                            print(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
 
                         allowed_protocols = {'ssh', 'http', 'rdp', 'https'}
                         allowed_rules = [find_security_rule_by_name(nsg, protocol) for protocol in allowed_protocols]
@@ -266,7 +267,7 @@ def check_network(subscription_ids):
 
                         # Check if there are more than one allowed rules
                         if len(allowed_rules) > 1:
-                            print("\t1. Detected Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
+                            print("\t1. Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
                             print("\tAllowed Protocols:")
                             for rule in allowed_rules:
                                 print(f"\t - {rule.name}")
@@ -303,20 +304,20 @@ def check_network(subscription_ids):
                     network_watchers = network_client.network_watchers.list(resource_group_name=resource_group.name)
 
                     for network_watcher in network_watchers:
-                        print(f"\nChecking Network Watchers in {resource_group.name} Resource Group:")
+                        print(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
 
                         if not network_watcher:
-                            print(f"\t1. No Network Watchers found in the {resource_group.name} resource group. Network Watcher is disabled.")
+                            print(f"\t1. No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                         else:
                             total_network_watcher_checks += 1
-                            print(f"\t1. {network_watcher.name} named Network Watcher is Enabled in the {resource_group.name} resource group.")
+                            print(f"\t1. Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
 
                         # Check if Network Watcher is  provisioned successfully
                         if network_watcher.provisioning_state.lower() == 'succeeded':
-                            print(f"\t2. Network Watcher named {network_watcher.name} is provisioned successfully.")
+                            print(f"\t2. Network Watcher named '{network_watcher.name}' is provisioned successfully.")
                         else:
                             detected_network_watcher_count += 1
-                            print(f"\t2. Network Watcher named {network_watcher.name} provisioning is not in a successful state.")
+                            print(f"\t2. Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
 
                 except Exception as e:
                     print(f'Error checking network watchers: {e}')
@@ -329,7 +330,7 @@ def check_network(subscription_ids):
                     print(f"\tVulnerable NSGs: {detected_nsg_count}")
                     print(f"\tTotal Network Watcher found in the subscription : {total_network_watcher_checks}")
                     print(f"\tNetwork Watchers not Provisioned: {detected_network_watcher_count}")
-                    print("---------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+                    print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
     except Exception as e:
         print(f'Error in checking network resources: {e}')
@@ -351,7 +352,7 @@ def check_network(subscription_ids):
 
 
 def check_web_app(subscription_ids):
-    print(f"------Checking Vulnerabilities in App Services------")
+    print(f"------Detecting Vulnerabilities in App Services------")
     total_web_apps_checked = 0
     total_detected_web_apps = 0
     try:
@@ -374,56 +375,57 @@ def check_web_app(subscription_ids):
                     web_app_configuration = webapp_client.web_apps.get_configuration(resource_group.name, web_app.name)
 
                     if not auth_settings.enabled:
-                        print(f"\n\t1. Vulnerability: App Service Authentication Disabled for WebApp: {web_app.name}")
+                        print(f"\n\t1. Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
                         #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                     else:
-                        print(f"\n\t1. App Service Authentication Enabled for WebApp: {web_app.name}")
+                        print(f"\n\t1. App Service Authentication Enabled for WebApp '{web_app.name}'")
                         #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
 
                     if auth_settings.aad_claims_authorization is None:
-                        print(f"\n\t2. Vulnerability: AAD Claims Authorization for WebApp: {web_app.name} is None")
+                        print(f"\n\t2. Vulnerability: Azure Active Directory (AAD) Claims Authorization for WebApp '{web_app.name}' is not configured.")
                     else:
-                        print(f"\n\t2. AAD Claims Authorization for WebApp: {web_app.name} is {auth_settings.aad_claims_authorization}")
+                        print(f"\n\t2. Azure Active Directory (AAD) Claims Authorization Status for the WebApp '{web_app.name}' is configured with '{auth_settings.aad_claims_authorization}'")
 
                     if auth_settings.unauthenticated_client_action == 'AllowAnonymous':
-                        print(f"\n\t3. Vulnerability: Unauthenticated Client Action for WebApp: {web_app.name} is set to Allow Anonymous")
+                        print(f"\n\t3. Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                     else:
-                        print(f"\n\t3. Unauthenticated Client Action for WebApp: {web_app.name} is Not set to Allow Anonymous")
+                        print(f"\n\t3. Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
 
                     if not web_app_configuration.auto_heal_enabled:
-                        print(f"\n\t4. Warning: If auto-healing is disabled, WebApp: {web_app.name} might not recover automatically from failures, leading to potential downtime.")
+                        print(f"\n\t4. Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                     else:
-                        print(f"\n\t4. Autoheal feature is enabled for WebApp: {web_app.name}")
+                        print(f"\n\t4. Autoheal feature is enabled for WebApp '{web_app.name}'")
 
-                    if  web_app_configuration.http_logging_enabled:
-                        print(f"\n\t5. Warning: If HTTP logging is disabled, it may hinder the ability to monitor and troubleshoot issues for WebApp: {web_app.name}.")
-                    else:
-                        print(f"\n\t5. HTTP logging is enabled for WebApp: {web_app.name}")
+                    # if  web_app_configuration.http_logging_enabled:
+                    #     print(f"\n\t5. Warning: If HTTP logging is disabled, it may hinder the ability to monitor and troubleshoot issues for WebApp '{web_app.name}'.")
+                    # else:
+                    #     print(f"\n\t5. HTTP logging is enabled for WebApp '{web_app.name}'")
 
                     if not web_app_configuration.http20_enabled:
-                        print(f"\n\t6. Warning: HTTP2.0 is disabled for WebApp: {web_app.name}, it may impact the performance benefits provided by the protocol.")
+                        print(f"\n\t6. Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                     else:
-                        print(f"\n\t6. HTTP2.0 is Enabled for WebApp: {web_app.name}")
+                        print(f"\n\t6. HTTP2.0 is Enabled for WebApp '{web_app.name}'")
 
                     if not float(web_app_configuration.min_tls_version) <= 1.2:
-                        print(f"\n\t7. Warning: The TLS (Transport Layer Security) protocol for WebApp: {web_app.name} secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
+                        print(f"\n\t7. Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                     else:
-                        print(f"\n\t7. TLS (Transport Layer Security) protocol version for WebApp: {web_app.name} is", web_app_configuration.min_tls_version)
+                        print(f"\n\t7. TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is", web_app_configuration.min_tls_version)
 
-                    if not web_app_configuration.ftps_state == "FtpsOnly":
-                        print(f"\n\t8. Vulnerability: If FTPS state is not set to 'FtpsOnly', it may expose data in transit to security risks for WebApp: {web_app.name}.")
-                    else:
-                        print(f"\n\t8. FTPS state is set to 'FtpsOnly' for WebApp: {web_app.name}")
+                    # if not web_app_configuration.ftps_state == "FtpsOnly":
+                    #     print(f"\n\t8. Vulnerability: If FTPS state is not set to 'FtpsOnly', it may expose data in transit to security risks for WebApp '{web_app.name}'.")
+                    # else:
+                    #     print(f"\n\t8. FTPS state is set to 'FtpsOnly' for WebApp '{web_app.name}'")
 
                     if web_app_configuration.public_network_access == "Enabled":
-                        print(f"\n\t9. Vulnerability: Enabling public network access may expose the WebApp: {web_app.name} to potential external threats.")
+                        print(f"\n\t9. Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                     else:
-                        print(f"\n\t9. Public Network access is disabled to the WebApp: {web_app.name}  ")
+                        print(f"\n\t9. Public Network access is disabled to the WebApp '{web_app.name}'  ")
 
                     if web_app_configuration.managed_service_identity_id is None:
-                        print(f"\n\t10. Vulnerability: App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp: {web_app.name}, which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
+                        print(f"\n\t10. Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
+                        #print(f"\n\t10. Vulnerability: App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
                     else:
-                        print(f"\n\t10. Managed Service Identities is Enabled for WebApp: {web_app.name}")
+                        print(f"\n\t10. Managed Service Identities is Enabled for WebApp '{web_app.name}'")
 
                     if (
                         not auth_settings.enabled
@@ -440,7 +442,7 @@ def check_web_app(subscription_ids):
                     print(f"\nSubscription Name: {sub.display_name}")
                     print(f"\tTotal Web Apps Checked: {total_web_apps_checked}")
                     print(f"\tTotal Detected Web Apps: {total_detected_web_apps}")
-                    print("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
+                    print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
 
     except Exception as e:
@@ -464,6 +466,105 @@ def check_web_app(subscription_ids):
 
 
 
+
+def check_storage_account_vulnerabilities(subscription_ids):
+    print(f"\n------Detecting Vulnerabilities in Storage Accounts------")
+    total_checks = 0
+    detected_count = 0
+
+    # Use Azure SDK with managed identity
+    credential = DefaultAzureCredential()
+    subscription_client = SubscriptionClient(credential)
+    subscriptions = list(subscription_client.subscriptions.list())
+
+    for subscription_id in subscription_ids:
+        try:
+            # subscription_client = SubscriptionClient(credential)
+            storage_client = StorageManagementClient(credential, subscription_id)
+            storage_accounts = storage_client.storage_accounts.list()
+
+            for storage_account in storage_accounts:
+                # print("\n1. Storage Account",storage_account)
+                total_checks += 1
+
+                # Ensure that 'Secure transfer required' is set to 'Enabled'
+                if not storage_account.enable_https_traffic_only:
+                    print(f"\n\t1. Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                else:
+                    print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
+                
+                #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
+                if not storage_account.encryption.require_infrastructure_encryption:
+                    print(f"\t2. Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                else:
+                    print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
+
+                #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
+                if storage_account.allow_blob_public_access:
+                    print(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                else:
+                    print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
+
+                ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
+                if storage_account.public_network_access:
+                    print(f"\t4. Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                else:
+                    print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
+
+                #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
+                if not storage_account.minimum_tls_version == 'TLS1_2':
+                    print(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                else:
+                    print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+
+
+                if (
+                    not storage_account.enable_https_traffic_only
+                    or not storage_account.encryption.require_infrastructure_encryption
+                    or storage_account.allow_blob_public_access
+                    or storage_account.public_network_access
+                ):
+                    detected_count +=1
+
+
+
+        except Exception as e:
+            print(f"Error processing subscription {subscription_id}: {e}")
+            print("Please ensure that the 'Storage Blob Data Reader' role is assigned to the subscription.")
+
+
+        for sub in subscriptions:
+            if sub.subscription_id == subscription_id:
+                print(f"\nSubscription Name: {sub.display_name}")
+                print("\tTotal Storage Accounts Checked: ", total_checks)
+                print("\tDetected Vulnerable Storage Accounts: ", detected_count)
+                print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+
+
+
+
+
+
+
+
+
+
+
+
+#################################################################################################
+#################################################################################################
+#################################################################################################
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     get_subscriptions()
     subscription_input = input("\nEnter the subscription ID(s) you want to check (comma-separated) or type 'all' for all subscriptions: ")
@@ -478,4 +579,5 @@ if __name__ == '__main__':
     check_unsecured_vm_instances(subscription_ids)
     check_network(subscription_ids)
     check_web_app(subscription_ids)
+    check_storage_account_vulnerabilities(subscription_ids)
 
