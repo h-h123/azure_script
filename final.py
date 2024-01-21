@@ -1,4 +1,5 @@
 import csv
+import os
 from datetime import datetime
 from collections import defaultdict
 from azure.identity import DefaultAzureCredential
@@ -9,14 +10,16 @@ from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.storage import StorageManagementClient
 from azure.storage.blob import BlobServiceClient
-import os
+from azure.mgmt.keyvault import KeyVaultManagementClient
+from azure.mgmt.authorization import AuthorizationManagementClient
+from azure.keyvault.secrets import SecretClient
 
 
 # Code :  1. VM code
 #         2. Network Code
 #         3. Web App Code
-#         4. Storage Code
-
+#         4. Storage Account Code
+#         5. Key Vault Code
 #################################################################################################
 #################################################################################################
 #################################################################################################
@@ -674,7 +677,7 @@ try:
                         web_app_configuration = webapp_client.web_apps.get_configuration(resource_group.name, web_app.name)
 
                         if not auth_settings.enabled:
-                            print(f"\n\t> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
+                            print(f"\n> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
                             #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                             sentences2.append(f"\n\t> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
@@ -694,7 +697,7 @@ try:
                         #     sentences2.append(f"\t> Azure Active Directory (AAD) Claims Authorization Status for the WebApp '{web_app.name}' is configured with '{auth_settings.aad_claims_authorization}'")
 
                         if auth_settings.unauthenticated_client_action == 'AllowAnonymous':
-                            print(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
+                            print(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                             sentences2.append(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                             sentences3.append(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                         else:
@@ -702,7 +705,7 @@ try:
                             sentences2.append(f"\t> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
 
                         if not web_app_configuration.auto_heal_enabled:
-                            print(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
+                            print(f"> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                             sentences2.append(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                             sentences3.append(f"> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                         else:
@@ -718,7 +721,7 @@ try:
                             # sentences2.append(f"\t> HTTP logging is enabled for WebApp '{web_app.name}'")
 
                         if not web_app_configuration.http20_enabled:
-                            print(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
+                            print(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                             sentences2.append(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                             sentences3.append(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                         else:
@@ -726,7 +729,7 @@ try:
                             sentences2.append(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
 
                         if not float(web_app_configuration.min_tls_version) <= 1.2:
-                            print(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
+                            print(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                             sentences2.append(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                             sentences3.append(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                         else:
@@ -742,7 +745,7 @@ try:
                             # sentences2.append(f"\t> FTPS state is set to 'FtpsOnly' for WebApp '{web_app.name}'")
 
                         if web_app_configuration.public_network_access == "Enabled":
-                            print(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
+                            print(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                             sentences2.append(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                             sentences3.append(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                         else:
@@ -750,7 +753,7 @@ try:
                             sentences2.append(f"\t> Public Network access is disabled to the WebApp '{web_app.name}'")
 
                         if web_app_configuration.managed_service_identity_id is None:
-                            print(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
+                            print(f"> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
                             #print(f"\t1> Vulnerability: App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
                             sentences2.append(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
                             sentences2.append(f"\t> App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
@@ -880,7 +883,7 @@ try:
 
                     # Ensure that 'Secure transfer required' is set to 'Enabled'
                     if not storage_account.enable_https_traffic_only:
-                        print(f"\n\t> Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                        print(f"\n> Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                         sentences2.append(f"\t1. Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                         sentences3.append(f"> Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                     else:
@@ -889,7 +892,7 @@ try:
                         
                     #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
                     if not storage_account.encryption.require_infrastructure_encryption:
-                        print(f"\t> Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                        print(f"> Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                         sentences2.append(f"\t2. Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                         sentences3.append(f"> Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                     else:
@@ -898,7 +901,7 @@ try:
 
                     #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
                     if storage_account.allow_blob_public_access:
-                        print(f"\t> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                        print(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                         sentences2.append(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                         sentences3.append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                     else:
@@ -907,7 +910,7 @@ try:
 
                     ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
                     if storage_account.public_network_access:
-                        print(f"\t> Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                        print(f"> Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
                         sentences2.append(f"\t4. Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
                         sentences3.append(f"> Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
                     else:
@@ -916,11 +919,11 @@ try:
 
                     #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
                     if not storage_account.minimum_tls_version == 'TLS1_2':
-                        print(f"\t> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                        print(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                         sentences2.append(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                         sentences3.append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                     else:
-                        #print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+                        #print(f"\t5. TLS veion for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
                         sentences2.append(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
 
                     sentences2.append(f"\n")
@@ -971,6 +974,208 @@ except Exception as e:
 #################################################################################################
 #################################################################################################
 
+# Key Vault Code 
+try:
+    def keyvault_rbac_sentences1and2_save_to_csv_for_html_report(csv_file_path, datetime_now, sentences1, sentences2):
+        fieldnames = ["Date Time"]
+        with open(csv_file_path, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Detecting Vulnerabilities in Key Vaults ...\n"])
+            writer.writerow(fieldnames)
+            writer.writerow([datetime_now])
+            # First sentences
+            for sentence in sentences1:
+                writer.writerow([sentence])
+            # Second Sentences
+            for sentence in sentences2:
+                writer.writerow([sentence])
+            
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
+
+    #######################################################################################################
+
+    def keyvault_rbac_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sentences1, sentences3):
+        fieldnames = ["Date Time"]
+        with open(csv_file_path2, mode='a', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Detecting Vulnerabilities in Key Vaults ...\n"])
+            writer.writerow(fieldnames)
+            writer.writerow([datetime_now])
+            # First sentences
+            for sentence in sentences1:
+                writer.writerow([sentence])
+            # Second Sentences
+            for sentence in sentences3:
+                writer.writerow([sentence])
+            
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
+
+    #######################################################################################################
+
+
+    def check_key_vault_rbac(subscription_ids):
+        print(f"\n------Detecting Vulnerabilities in Key Vaults & RBAC------")
+        total_key_vault_count = 0
+        detected_key_vault_count = 0
+        csv_file_path = "azure_HTML_report.csv"
+        datetime_now = datetime.now()
+        sentences1 = [] # Details of count
+        sentences2 = [] # All details for HTML report
+        csv_file_path2 = "Azure_Report.csv"
+        sentences3 = [] # Specific detail for users to see vulnerabilities only
+
+
+        try:
+            credential = DefaultAzureCredential()
+            subscription_client = SubscriptionClient(credential)
+            subscriptions = list(subscription_client.subscriptions.list())
+
+            for subscription_id in subscription_ids:
+                keyvault_client = KeyVaultManagementClient(credential, subscription_id)
+                resource_client = ResourceManagementClient(credential, subscription_id)
+                resource_groups = resource_client.resource_groups.list()
+
+                for resource_group in resource_groups:
+                    keyvaults = keyvault_client.vaults.list_by_resource_group(resource_group.name)
+
+                    for keyvault in keyvaults:
+                        total_key_vault_count += 1
+                        print(f"\n") #after every key vault
+                        sentences2.append(f"\n")
+                        sentences3.append(f"\n")
+
+                        # Check if RBAC is enabled
+                        if keyvault.properties.enable_rbac_authorization:
+                            #print(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
+                            sentences2.append(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
+                        else:
+                            print(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
+                            sentences2.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
+                            sentences3.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
+                        
+                        # Check if key rotation settings are present 
+                        if keyvault.properties.enable_soft_delete:
+                            #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
+                            sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
+                        else:
+                            print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
+                            sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
+                            sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
+                        
+                        # Check if Private Endpoint connections are present
+                        if keyvault.properties.private_endpoint_connections:
+                            #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
+                            sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
+                        else:
+                            print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
+                            sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
+                            sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
+                        
+                        # Check if automated recovery is enabled
+                        if keyvault.properties.enable_soft_delete and keyvault.properties.enable_purge_protection:
+                            #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
+                            sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
+                        else:
+                            print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
+                            sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
+                            sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
+
+                        # Check if Key Vault allows public network access
+                        network_acls = keyvault.properties.network_acls
+                        if network_acls and network_acls.default_action == 'Allow':
+                            print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
+                            sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
+                            sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
+                        else:
+                            #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
+                            sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
+
+                        # Fetch role assignments for the Key Vault using AuthorizationManagementClient
+                        authorization_client = AuthorizationManagementClient(credential, subscription_id)
+                        role_assignments = list(authorization_client.role_assignments.list_for_scope(keyvault.id))
+
+                        # Check if a custom subscription owner role is present
+                        custom_owner_role_present = any(
+                            assignment.role_definition_id.endswith('/subscriptionOwners')
+                            for assignment in role_assignments
+                        )
+
+                        if custom_owner_role_present:
+                            #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
+                            sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
+                        else:
+                            print(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
+                            sentences2.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
+                            sentences3.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
+
+    #                    """Check if expiration date is set to be 90 days or less from creation for all secrets in non-RBAC Key Vaults across specified subscriptions."""
+    #                 # Construct the Key Vault URL
+    #                 keyvault_url = f"https://{keyvault.name}.vault.azure.net"
+
+    #                 # Initialize SecretClient
+    #                 secret_client = SecretClient(keyvault_url, credential)
+
+    #                 # List secrets and check expiration date to be 90 days or less from creation
+    #                 secrets = secret_client.list_properties_of_secrets()
+    #                 for secret in secrets:
+    #                     if secret.properties.expires_on is not None:
+    #                         expiration_date = secret.properties.expires_on or secret.properties.expires_on_utc
+
+    #                         # Check if the expiration date is 90 days or less from the creation date
+    #                         creation_date = secret.properties.created
+    #                         if expiration_date <= creation_date + timedelta(days=90):
+    #                             print(f"  Secret '{secret.name}' in Key Vault '{keyvault.name}' has a valid expiration date set: {expiration_date}.")
+    #                         else:
+    #                             print(f"  Warning: Secret '{secret.name}' in Key Vault '{keyvault.name}' has an expiration date more than 90 days from creation: {expiration_date}.")
+    #                     else:
+    #                         print(f"  Warning: Secret '{secret.name}' in Key Vault '{keyvault.name}' does not have an expiration date set.")
+
+
+                        if (not keyvault.properties.enable_rbac_authorization
+                        or not keyvault.properties.enable_soft_delete
+                        or not keyvault.properties.private_endpoint_connections
+                        or (network_acls and network_acls.default_action == 'Allow')
+                        ):
+                            detected_key_vault_count += 1
+
+                    
+
+                for sub in subscriptions:
+                    if sub.subscription_id == subscription_id:
+                        print(f"\nSubscription Name: {sub.display_name}")
+                        sentences1.append(f"\nSubscription Name: {sub.display_name}")
+                        sentences1.append(f"Subscription ID: {sub.subscription_id}")
+
+                        print(f"\tTotal Key Vaults Checked: {total_key_vault_count}")
+                        sentences1.append(f"\nTotal Key Vaults Checked: {total_key_vault_count}")
+
+                        print(f"\tTotal Detected Key Vaults: {detected_key_vault_count}")
+                        sentences1.append(f"Total Detected Key Vaults: {detected_key_vault_count}")
+
+                        print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+                    
+                    #Call the save to csv function for html report
+                    keyvault_rbac_sentences1and2_save_to_csv_for_html_report(csv_file_path, datetime_now, sentences1, sentences2)
+                    keyvault_rbac_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sentences1, sentences3)
+
+
+        except Exception as e:
+            print(f'Error in checking Vulnerabilities for Key Vault: {e}')
+            sentences2.append(f'Error in checking Vulnerabilities for Key Vault: {e}')
+            sentences3.append(f'Error in checking Vulnerabilities for Key Vault: {e}')
+            
+
+except Exception as e:
+    print(f"Error in checking Key Vault code: {e}")
+
+
+
+
+
+
+#################################################################################################
+#################################################################################################
+#################################################################################################
 
 
 if __name__ == '__main__':
@@ -988,4 +1193,5 @@ if __name__ == '__main__':
     check_network(subscription_ids)
     check_web_app(subscription_ids)
     check_storage_account_vulnerabilities(subscription_ids)
+    check_key_vault_rbac(subscription_ids)
 
