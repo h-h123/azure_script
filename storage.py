@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import csv
 from collections import Counter
 from azure.identity import DefaultAzureCredential
@@ -15,11 +15,55 @@ def get_subscriptions():
     for sub in subscriptions:
         print(f"Subscription Name: {sub.display_name}, Subscription ID: {sub.subscription_id}")
 
+#######################################################################################################
+
+def storageacc_sentences1and2_save_to_csv_for_html_report(csv_file_path, datetime_now, sentences1, sentences2):
+    fieldnames = ["Date Time"]
+    with open(csv_file_path, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Detecting Vulnerabilities in Storage Accounts ...\n"])
+        writer.writerow(fieldnames)
+        writer.writerow([datetime_now])
+        # First sentences
+        for sentence in sentences1:
+            writer.writerow([sentence])
+        # Second Sentences
+        for sentence in sentences2:
+            writer.writerow([sentence])
+        
+        writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
+
+#######################################################################################################
+
+def storageacc_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sentences1, sentences3):
+    fieldnames = ["Date Time"]
+    with open(csv_file_path2, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Detecting Vulnerabilities in Storage Accounts ...\n"])
+        writer.writerow(fieldnames)
+        writer.writerow([datetime_now])
+        # First sentences
+        for sentence in sentences1:
+            writer.writerow([sentence])
+        # Second Sentences
+        for sentence in sentences3:
+            writer.writerow([sentence])
+        
+        writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
+
+#######################################################################################################
+
 
 def check_storage_account_vulnerabilities(subscription_ids):
     print(f"\nDetecting Vulnerabilities in Storage Accounts...")
     total_checks = 0
     detected_count = 0
+    csv_file_path = "azure_storage_account_HTML_report.csv"
+    datetime_now = datetime.now()
+    sentences1 = [] # Details of count
+    sentences2 = [] # All details for HTML report
+    csv_file_path2 = "Azure_Report.csv"
+    sentences3 = [] # Specific detail for users to see vulnerabilities only
 
     # Use Azure SDK with managed identity
     credential = DefaultAzureCredential()
@@ -35,37 +79,55 @@ def check_storage_account_vulnerabilities(subscription_ids):
             for storage_account in storage_accounts:
                 # print("\n1. Storage Account",storage_account)
                 total_checks += 1
+                print(f"\n")# After every storage account
 
                 # Ensure that 'Secure transfer required' is set to 'Enabled'
                 if not storage_account.enable_https_traffic_only:
-                    print(f"\n\t1. Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                    print(f"\n\t> Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                    sentences2.append(f"\t1. Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                    sentences3.append(f"> Vunerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                 else:
-                    print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
-                
+                    #print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
+                    sentences2.append(f"\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
+                    
                 #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
                 if not storage_account.encryption.require_infrastructure_encryption:
-                    print(f"\t2. Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                    print(f"\t> Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                    sentences2.append(f"\t2. Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                    sentences3.append(f"> Vunerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                 else:
-                    print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
+                    #print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
+                    sentences2.append(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
 
                 #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
                 if storage_account.allow_blob_public_access:
-                    print(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                    print(f"\t> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                    sentences2.append(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                    sentences3.append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                 else:
-                    print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
+                    #print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
+                    sentences2.append(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
 
                 ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
                 if storage_account.public_network_access:
-                    print(f"\t4. Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                    print(f"\t> Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                    sentences2.append(f"\t4. Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                    sentences3.append(f"> Vulnerabilty: The Storage Account '{storage_account.name}' is allowing public traffic.")
                 else:
-                    print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
+                    #print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
+                    sentences2.append(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
 
                 #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
                 if not storage_account.minimum_tls_version == 'TLS1_2':
-                    print(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                    print(f"\t> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                    sentences2.append(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                    sentences3.append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                 else:
-                    print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+                    #print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+                    sentences2.append(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
 
+                sentences2.append(f"\n")
+                sentences3.append(f"\n")# After every storage account
 
                 if (
                     not storage_account.enable_https_traffic_only
@@ -78,15 +140,30 @@ def check_storage_account_vulnerabilities(subscription_ids):
 
 
         except Exception as e:
-            print(f"Error processing subscription {subscription_id}: {e}")
-            print("Please ensure that the 'Storage Blob Data Reader' role is assigned to the subscription.")
-
+            print(f"Error Detecting Vulnerabilities For Storage Account in subscription {subscription_id}: {e}")
+            print(f"Please ensure that the 'Storage Blob Data Reader' role is assigned to the subscription.")
+            sentences2.append(f"Error Detecting Vulnerabilities For Storage Account in subscription {subscription_id}: {e}")
+            sentences2.append(f"Please ensure that the 'Storage Blob Data Reader' role is assigned to the subscription.")
+            sentences3.append(f"Error Detecting Vulnerabilities For Storage Account in subscription {subscription_id}: {e}")
+            sentences3.append(f"Please ensure that the 'Storage Blob Data Reader' role is assigned to the subscription.")
 
         for sub in subscriptions:
             if sub.subscription_id == subscription_id:
                 print(f"\nSubscription Name: {sub.display_name}")
-                print("\tTotal Storage Accounts Checked: ", total_checks)
-                print("\tDetected Vulnerable Storage Accounts: ", detected_count)
+                sentences1.append(f"\nSubscription Name: {sub.display_name}")
+                sentences1.append(f"Subscription ID: {sub.subscription_id}")
+
+                print(f"\tTotal Storage Accounts Checked: ", total_checks)
+                sentences1.append(f"\nTotal Storage Accounts Checked: {total_checks}")
+
+                print(f"\tDetected Vulnerable Storage Accounts: ", detected_count)
+                sentences1.append(f"Detected Vulnerable Storage Accounts: {detected_count} \n")
+
+                print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+
+            #Call the save to csv function for html report
+            storageacc_sentences1and2_save_to_csv_for_html_report(csv_file_path, datetime_now, sentences1, sentences2)
+            storageacc_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sentences1, sentences3)
 
 if __name__ == '__main__':
     get_subscriptions()
