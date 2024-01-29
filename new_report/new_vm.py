@@ -7,15 +7,19 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.resource import SubscriptionClient
 
 def get_subscriptions():
-    credential = DefaultAzureCredential()
-    subscription_client = SubscriptionClient(credential)
-    subscriptions = list(subscription_client.subscriptions.list())
+    try:
+        credential = DefaultAzureCredential()
+        subscription_client = SubscriptionClient(credential)
+        subscriptions = list(subscription_client.subscriptions.list())
 
-    print("Available Subscriptions:")
-    for sub in subscriptions:
-        print(f"Subscription Name: {sub.display_name}, Subscription ID: {sub.subscription_id}")
+        print("Available Subscriptions:")
+        for sub in subscriptions:
+            print(f"Subscription Name: {sub.display_name}, Subscription ID: {sub.subscription_id}")
 
-
+        return subscriptions
+    except Exception as e:
+        print(f"Error retrieving subscriptions: {e}")
+        raise
 
 #######################################################################################################
 
@@ -53,26 +57,65 @@ def vm_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sente
         
         writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
+
+
+#######################################################################################################
+
+def new_Report_VM_sentences1and2_save_to_csv_for_html_report(csv_file_path3, datetime_now, details_dict):
+    fieldnames = ["Date Time", "Subscription Name", "Subscription ID", "Total VMs checked", "Detected unsecured VMs", "Total Disks checked", "Detected unsecured Disks", "Details"]
+    
+    with open(csv_file_path3, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        if file.tell() == 0:
+            writer.writeheader()
+
+        # Use details_dict directly
+        data = {
+            "Date Time": datetime_now,
+            "Subscription Name": details_dict.get("Subscription Name", ""),
+            "Subscription ID": details_dict.get("Subscription ID", ""),
+            "Total VMs checked": details_dict.get("Total VMs checked", ""),
+            "Detected unsecured VMs": details_dict.get("Detected unsecured VMs", ""),
+            "Total Disks checked": details_dict.get("Total Disks checked", ""),
+            "Detected unsecured Disks": details_dict.get("Detected unsecured Disks", ""),
+            "Details": ', \n'.join(details_dict.get("Details", []))  # Join the list of sentences into a string
+        }
+
+        writer.writerow(data)
+
+
 #######################################################################################################
 
 
 
 
 def check_unsecured_vm_instances(subscription_ids):
-    print(f"\n\n------Detecting Vulnerabilities in Virtual Machines------")
+    
     total_vm_checked_count = 0
     detected_vm_count = 0
     total_disk_checked_count = 0
     detected_disk_count = 0
-    csv_file_path = "azure_web_app_HTML_report.csv"
+    csv_file_path = "azure_HTML_report.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of counts
     sentences2 = [] # All details for HTML report
     csv_file_path2 = "Azure_Report.csv"
     sentences3 = [] # Specific detail for users to see vulnerabilities only in CSV file
-    
+    csv_file_path3 = 'New_report.csv'
+    # Details dictionary for the current subscription
+    details_dict = {
+    "Subscription Name": "",
+    "Subscription ID": "",
+    "Total VMs checked": 0,
+    "Detected unsecured VMs": 0,
+    "Total Disks checked": 0,
+    "Detected unsecured Disks": 0,
+    "Details": []  # Details will be a list of sentences
+    }
+
 
     try:
+        print(f"\n\n------Detecting Vulnerabilities in Virtual Machines------")
         credential = DefaultAzureCredential()
         subscription_client = SubscriptionClient(credential)
         subscriptions = list(subscription_client.subscriptions.list())
@@ -92,6 +135,7 @@ def check_unsecured_vm_instances(subscription_ids):
                 print(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                 sentences2.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                 sentences3.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
+                details_dict["Details"].append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
 
                 total_vm_checked_count += 1
 
@@ -134,6 +178,7 @@ def check_unsecured_vm_instances(subscription_ids):
                     sentences2.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
                     sentences2.append(f"\tRemediation - Enable just-in-time access control to protect your VM from internet-based brute-force attacks.")
                     sentences3.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                    details_dict["Details"].append(f"> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
 
 
         ####################################################################################
@@ -149,6 +194,7 @@ def check_unsecured_vm_instances(subscription_ids):
                     print(f"\nChecking for Disk '{disk.name}' in RG '{RG_of_disk}'...")
                     sentences2.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
                     sentences3.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
+                    details_dict["Details"].append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
 
 
                     # check_disk_vulnerability_warning_scenarios(disk)
@@ -160,11 +206,13 @@ def check_unsecured_vm_instances(subscription_ids):
                     if disk.disk_state == 'Attached':
                         #print(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
                         sentences2.append(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
+                        details_dict["Details"].append(f"> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
 
                     else:
                         print(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}'is not attached to any VM.")
                         sentences2.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
                         sentences3.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
+                        details_dict["Details"].append(f"> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
 
                     # Data Access Auth Mode
                     if disk.data_access_auth_mode is None:
@@ -175,9 +223,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Unauthorized users may gain access to sensitive disk data, leading to potential data breaches.")
                         sentences2.append(f"\tRecommendation: Ensure strong authentication methods, such as Azure AD/ Entra ID credentials, are enforced.")
                         sentences3.append(f"\t> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
                         sentences2.append(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
+                        details_dict["Details"].append(f"> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
 
 
                     # Encryption Settings
@@ -185,10 +235,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         print(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                         sentences2.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                         sentences3.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
                         sentences2.append(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
-
+                        details_dict["Details"].append(f"> Encryption settings for the disk '{disk.name}' are configured.")
 
                     # Optimized for Frequent Attach
                     if disk.optimized_for_frequent_attach and 'sensitive_data' in disk.tags:
@@ -199,12 +250,13 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Frequent attaching may expose the disk to unintended access, increasing the risk of data compromise.")
                         sentences2.append(f"\tRecommendation: Assess the need for frequent attachment and optimize performance accordingly. Consider encryption for sensitive data.")
                         sentences3.append(f"\t> Warning: Disk '{disk.name}' is optimized for frequent attachment, but it contains sensitive data.")
+                        details_dict["Details"].append(f"> Warning: Disk '{disk.name}' is optimized for frequent attachment but it contains sensitive data.")
                     else:
                         #print(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                         #print(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")
                         sentences2.append(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
-                        sentences2.append(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")
-                        
+                        sentences2.append(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")    
+                        details_dict["Details"].append(f"> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
 
                     # Bursting Enabled Time
                     if disk.bursting_enabled_time and disk.bursting_enabled_time.startswith("peak_hours"):
@@ -215,10 +267,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Bursting might consume additional resources, impacting overall system performance during peak hours.")
                         sentences2.append(f"\tRecommendation: Schedule bursting during non-peak hours and monitor resource utilization to avoid performance degradation.")
                         sentences3.append(f"\t> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
                         sentences2.append(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
-
+                        details_dict["Details"].append(f"> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
 
 
                     # Check if all conditions are met before flagging the Disk as unsecured
@@ -227,7 +280,7 @@ def check_unsecured_vm_instances(subscription_ids):
                         #print(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                         sentences2.append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                         #sentences3.append(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
-
+                        details_dict["Details"].append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
 
             # Printing Information
             for sub in subscriptions:
@@ -251,16 +304,26 @@ def check_unsecured_vm_instances(subscription_ids):
                     #print("\tInsecure VMs:", insecure_vms)
                     #sentences1.append
 
-                    print("--------------------------------------------------------------------------------------------------------------------------------------------------------------------")  # Add a newline for better readability
+                    print(f"-" * 160)
+                    #print("-------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+                    
+                    details_dict["Subscription Name"] = sub.display_name
+                    details_dict["Subscription ID"] = sub.subscription_id
+                    details_dict["TTotal VMs checked"] = total_vm_checked_count
+                    details_dict["Detected unsecured VMs"] = detected_vm_count
+                    details_dict["Total Disks checked"] = total_disk_checked_count
+                    details_dict["Detected unsecured Disks"] = detected_disk_count
 
                 #Call the save to csv function for html report
                 vm_sentences1and2_save_to_csv_for_html_report(csv_file_path, datetime_now, sentences1, sentences2)
                 vm_sentences1and3_save_to_csv_for_report(csv_file_path2, datetime_now, sentences1, sentences3)
-
+                new_Report_VM_sentences1and2_save_to_csv_for_html_report(csv_file_path3, datetime_now, details_dict)
+    
     except Exception as e:
             print(f'Error in checking virtual machines vulnerabilities: {e}')
             sentences2.append(f'Error in checking virtual machines vulnerabilities: {e}')
             sentences3.append(f'Error in checking virtual machines vulnerabilities: {e}')
+            details_dict["Details"].append(f'Error in checking virtual machines vulnerabilities: {e}')
 
 
 if __name__ == '__main__':
