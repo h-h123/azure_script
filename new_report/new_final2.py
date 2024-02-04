@@ -125,9 +125,12 @@ try:
             }
 
             writer.writerow(data)
+            writer = csv.writer(file)
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
 
     #######################################################################################################
+
 
 
 
@@ -138,7 +141,7 @@ try:
         detected_vm_count = 0
         total_disk_checked_count = 0
         detected_disk_count = 0
-        csv_file_path = "azure_HTML_report.csv"
+        csv_file_path = "azure_HTML_report2.csv"
         datetime_now = datetime.now()
         sentences1 = [] # Details of counts
         sentences2 = [] # All details for HTML report
@@ -178,7 +181,7 @@ try:
                     print(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                     sentences2.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                     sentences3.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
-                    details_dict["Details"].append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
+                    details_dict["Details"].append(f"\nResource_Group:{resource_group_of_vm}")
 
                     total_vm_checked_count += 1
 
@@ -217,11 +220,11 @@ try:
                         detected_vm_count += 1
                         insecure_vms.append(vm.name)
                         unsecured = True
-                        print(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
-                        sentences2.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                        print(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                        sentences2.append(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
                         sentences2.append(f"\tRemediation - Enable just-in-time access control to protect your VM from internet-based brute-force attacks.")
-                        sentences3.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
-                        details_dict["Details"].append(f"> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                        sentences3.append(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                        details_dict["Details"].append(f"Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
 
 
             ####################################################################################
@@ -237,7 +240,7 @@ try:
                         print(f"\nChecking for Disk '{disk.name}' in RG '{RG_of_disk}'...")
                         sentences2.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
                         sentences3.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
-                        details_dict["Details"].append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
+                        details_dict["Details"].append(f"\nResource_Group:{RG_of_disk}")
 
 
                         # check_disk_vulnerability_warning_scenarios(disk)
@@ -249,13 +252,13 @@ try:
                         if disk.disk_state == 'Attached':
                             #print(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
                             sentences2.append(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
-                            details_dict["Details"].append(f"> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
+                            details_dict["Details"].append(f"The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
 
                         else:
                             print(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}'is not attached to any VM.")
                             sentences2.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
                             sentences3.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
-                            details_dict["Details"].append(f"> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
+                            details_dict["Details"].append(f"Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
 
                         # Data Access Auth Mode
                         if disk.data_access_auth_mode is None:
@@ -266,11 +269,11 @@ try:
                             sentences2.append(f"\tRisk: Unauthorized users may gain access to sensitive disk data, leading to potential data breaches.")
                             sentences2.append(f"\tRecommendation: Ensure strong authentication methods, such as Azure AD/ Entra ID credentials, are enforced.")
                             sentences3.append(f"\t> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
-                            details_dict["Details"].append(f"> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
+                            details_dict["Details"].append(f"Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
                         else:
                             #print(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
                             sentences2.append(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
-                            details_dict["Details"].append(f"> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
+                            details_dict["Details"].append(f"Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
 
 
                         # Encryption Settings
@@ -278,11 +281,11 @@ try:
                             print(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                             sentences2.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                             sentences3.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
-                            details_dict["Details"].append(f"> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
+                            details_dict["Details"].append(f"Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                         else:
                             #print(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
                             sentences2.append(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
-                            details_dict["Details"].append(f"> Encryption settings for the disk '{disk.name}' are configured.")
+                            details_dict["Details"].append(f"Encryption settings for the disk '{disk.name}' are configured.")
 
                         # Optimized for Frequent Attach
                         if disk.optimized_for_frequent_attach and 'sensitive_data' in disk.tags:
@@ -293,13 +296,13 @@ try:
                             sentences2.append(f"\tRisk: Frequent attaching may expose the disk to unintended access, increasing the risk of data compromise.")
                             sentences2.append(f"\tRecommendation: Assess the need for frequent attachment and optimize performance accordingly. Consider encryption for sensitive data.")
                             sentences3.append(f"\t> Warning: Disk '{disk.name}' is optimized for frequent attachment, but it contains sensitive data.")
-                            details_dict["Details"].append(f"> Warning: Disk '{disk.name}' is optimized for frequent attachment but it contains sensitive data.")
+                            details_dict["Details"].append(f"Warning: Disk '{disk.name}' is optimized for frequent attachment but it contains sensitive data.")
                         else:
                             #print(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                             #print(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")
                             sentences2.append(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                             sentences2.append(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")    
-                            details_dict["Details"].append(f"> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
+                            details_dict["Details"].append(f"The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
 
                         # Bursting Enabled Time
                         if disk.bursting_enabled_time and disk.bursting_enabled_time.startswith("peak_hours"):
@@ -310,11 +313,11 @@ try:
                             sentences2.append(f"\tRisk: Bursting might consume additional resources, impacting overall system performance during peak hours.")
                             sentences2.append(f"\tRecommendation: Schedule bursting during non-peak hours and monitor resource utilization to avoid performance degradation.")
                             sentences3.append(f"\t> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
-                            details_dict["Details"].append(f"> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
+                            details_dict["Details"].append(f"Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
                         else:
                             #print(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
                             sentences2.append(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
-                            details_dict["Details"].append(f"> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
+                            details_dict["Details"].append(f"Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
 
 
                         # Check if all conditions are met before flagging the Disk as unsecured
@@ -323,7 +326,7 @@ try:
                             #print(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                             sentences2.append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                             #sentences3.append(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
-                            details_dict["Details"].append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
+                            #details_dict["Details"].append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
 
                 # Printing Information
                 for sub in subscriptions:
@@ -367,6 +370,7 @@ try:
                 sentences2.append(f'Error in checking virtual machines vulnerabilities: {e}')
                 sentences3.append(f'Error in checking virtual machines vulnerabilities: {e}')
                 details_dict["Details"].append(f'Error in checking virtual machines vulnerabilities: {e}')
+
 
 except Exception as e:
     print(f"Error In Checking VM Code: {e}")
@@ -452,6 +456,8 @@ try:
             }
 
             writer.writerow(data)
+            writer = csv.writer(file)
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
 
 
@@ -498,6 +504,7 @@ try:
     ######################################################################################################
 
 
+
     def check_network(subscription_ids):
         total_nsg_checks = 0
         detected_nsg_count = 0
@@ -507,7 +514,7 @@ try:
         detected_nsg_resource_groups = []
         detected_network_watcher_names = []
         detected_network_watcher_resource_groups = []
-        csv_file_path = "azure_HTML_report.csv"
+        csv_file_path = "azure_HTML_report2.csv"
         datetime_now = datetime.now()
         sentences1 = [] # Details of count
         sentences2 = [] # All details for HTML report
@@ -551,21 +558,21 @@ try:
                             #print(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
                             sentences2.append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
                             sentences3.append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
-                            details_dict["Details"].append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
+                            details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
 
                             if not nsg:
                                 #print(f"No NSGs found in the '{resource_group.name}' resource group.")
                                 sentences2.append(f"No NSGs found in the '{resource_group.name}' resource group.")
                             #    sentences3.append(f"No NSGs found in the '{resource_group.name}' resource group.")
-                                details_dict["Details"].append(f"No NSGs found in the '{resource_group.name}' resource group.")
+                                # details_dict["Details"].append(f"No NSGs found in the '{resource_group.name}' resource group.")
 
                             else:
                                 total_nsg_checks += 1
                                 #print(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
                                 sentences2.append(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
                             #    sentences3.append(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
-                                details_dict["Details"].append(f"NSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
+                                # details_dict["Details"].append(f"NSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
 
                             allowed_protocols = {'ssh', 'http', 'rdp', 'https'}
                             allowed_rules = [find_security_rule_by_name(nsg, protocol) for protocol in allowed_protocols]
@@ -578,7 +585,7 @@ try:
                                 sentences2.append(f"\tVulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
                                 sentences3.append(f"\tVulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
                                 
-                                details_dict["Details"].append(f"> Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed in the NSG '{nsg.name}'in the resource group '{resource_group.name}'.(Consider Restricting)")
+                                details_dict["Details"].append(f"Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed in the NSG '{nsg.name}'in the resource group '{resource_group.name}'(Consider Restricting)")
 
                                 print(f"\tAllowed Protocols:")
                                 sentences2.append(f"\tAllowed Protocols:")
@@ -603,7 +610,7 @@ try:
                                     print(f"\tWarning: Inbound SSH access is allowed.")
                                     sentences2.append(f"\tWarning: Inbound SSH access is allowed.")
                                     sentences3.append(f"\tWarning: Inbound SSH access is allowed.")
-                                    details_dict["Details"].append(f"> Warning: Inbound SSH access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                    details_dict["Details"].append(f"Warning: Inbound SSH access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
                                 if udp_detected:
                                     detected_nsg_count += 1
@@ -611,7 +618,7 @@ try:
                                     print(f"\tWarning: Inbound UDP access is allowed.")
                                     sentences2.append(f"\tWarning: Inbound UDP access is allowed.")
                                     sentences3.append(f"\tWarning: Inbound UDP access is allowed.")
-                                    details_dict["Details"].append(f"> Warning: Inbound UDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                    details_dict["Details"].append(f"Warning: Inbound UDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
 
                                 if rdp_detected:
@@ -620,7 +627,7 @@ try:
                                     print(f"\tWarning: Inbound RDP access is allowed.")
                                     sentences2.append(f"\tWarning: Inbound RDP access is allowed.")
                                     sentences3.append(f"\tWarning: Inbound RDP access is allowed.")
-                                    details_dict["Details"].append(f"> Warning: Inbound RDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                    details_dict["Details"].append(f"Warning: Inbound RDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
 
 
@@ -650,35 +657,35 @@ try:
                             #print(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
                             sentences2.append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
                             sentences3.append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
-                            details_dict["Details"].append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
+                            details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
                             if not network_watcher:
                                 print(f"\tVulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                                 sentences2.append(f"\t Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                                 sentences3.append(f"\t Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
-                                details_dict["Details"].append(f"> Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
+                                details_dict["Details"].append(f"Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                             else:
                                 total_network_watcher_checks += 1
                                 #print(f"\t1. Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
                                 sentences2.append(f"\t Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
-                                details_dict["Details"].append(f"> Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
+                                details_dict["Details"].append(f"Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
 
                             # Check if Network Watcher is  provisioned successfully
                             if network_watcher.provisioning_state.lower() == 'succeeded':
                                 #print(f"\t2. Network Watcher named '{network_watcher.name}' is provisioned successfully.")
                                 sentences2.append(f"\t Network Watcher named '{network_watcher.name}' is provisioned successfully.")
-                                details_dict["Details"].append(f"> Network Watcher named '{network_watcher.name}' is provisioned successfully.")
+                                details_dict["Details"].append(f"Network Watcher named '{network_watcher.name}' is provisioned successfully.")
                             else:
                                 detected_network_watcher_count += 1
                                 print(f"\tVulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
                                 sentences2.append(f"\t Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
                                 sentences3.append(f"\t Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
-                                details_dict["Details"].append(f"\t> Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
+                                details_dict["Details"].append(f"\tVulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
 
                             if network_watcher and network_watcher.provisioning_state.lower() == 'succeeded':
                                 sentences2.append(f"\tNo vulnerability Found !")
                                 sentences3.append(f"\tNo vulnerability Found !")
-                                details_dict["Details"].append(f"\tNo vulnerability Found !")
+                                # details_dict["Details"].append(f"\tNo vulnerability Found !")
 
                             # Recording information for CSV
                             detected_network_watcher_names.append(network_watcher.name)
@@ -730,7 +737,6 @@ try:
             sentences2.append(f'Error in checking network resources: {e}')
             sentences3.append(f'Error in checking network resources: {e}')
             details_dict["Details"].append(f'Error in checking network resources: {e}')
-
 
 
 except Exception as e:
@@ -815,17 +821,20 @@ try:
             }
 
             writer.writerow(data)
+            writer = csv.writer(file)
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
 
 
     #######################################################################################################
 
 
+
     def check_web_app(subscription_ids):
         
         total_web_apps_checked = 0
         total_detected_web_apps = 0
-        csv_file_path = "azure_HTML_report.csv"
+        csv_file_path = "azure_HTML_report2.csv"
         datetime_now = datetime.now()
         sentences1 = [] # Details of count
         sentences2 = [] # All details for HTML report
@@ -856,7 +865,7 @@ try:
                 for resource_group in resource_groups:
                     web_apps = webapp_client.web_apps.list_by_resource_group(resource_group.name)
                     sentences2.append(f"\nIn Resource Group: {resource_group.name}")
-                    details_dict["Details"].append(f"\nIn Resource Group: {resource_group.name}")
+                    details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
                     
                     for web_app in web_apps:
                         total_web_apps_checked += 1
@@ -871,7 +880,7 @@ try:
                             #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                             sentences2.append(f"\n\t> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
-                            details_dict["Details"].append(f"> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'.")
+                            details_dict["Details"].append(f"Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'.")
                             #details_dict["Details"].append(f"\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
 
                             sentences3.append(f"> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
@@ -880,7 +889,7 @@ try:
                             #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                             sentences2.append(f"\n\t> App Service Authentication Enabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
-                            details_dict["Details"].append(f"> App Service Authentication Enabled for WebApp '{web_app.name}'.")
+                            details_dict["Details"].append(f"App Service Authentication Enabled for WebApp '{web_app.name}'.")
                             #details_dict["Details"].append(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
 
                         # if auth_settings.aad_claims_authorization is None:
@@ -895,22 +904,22 @@ try:
                             print(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                             sentences2.append(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                             sentences3.append(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
-                            details_dict["Details"].append(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
+                            details_dict["Details"].append(f"Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                         else:
                             #print(f"\t> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
                             sentences2.append(f"\t> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
-                            details_dict["Details"].append(f"> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous.")
+                            details_dict["Details"].append(f"Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous.")
 
                         if not web_app_configuration.auto_heal_enabled:
                             print(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                             sentences2.append(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                             sentences3.append(f"> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
-                            details_dict["Details"].append(f"> Warning: If auto-healing is disabled then WebApp '{web_app.name}' might not recover automatically from failures which leads to potential downtime.")
+                            details_dict["Details"].append(f"Warning: If auto-healing is disabled then WebApp '{web_app.name}' might not recover automatically from failures which leads to potential downtime.")
 
                         else:
                             #print(f"\t> Auto heal feature is enabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\t> Auto heal feature is enabled for WebApp '{web_app.name}'")
-                            details_dict["Details"].append(f"> Auto heal feature is enabled for WebApp '{web_app.name}'")
+                            details_dict["Details"].append(f"Auto heal feature is enabled for WebApp '{web_app.name}'")
 
                         # if  web_app_configuration.http_logging_enabled:
                         #     print(f"\t> Warning: If HTTP logging is disabled, it may hinder the ability to monitor and troubleshoot issues for WebApp '{web_app.name}'.")
@@ -924,23 +933,23 @@ try:
                             print(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                             sentences2.append(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                             sentences3.append(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
-                            details_dict["Details"].append(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}' which may impact the performance benefits provided by the protocol.")
+                            details_dict["Details"].append(f"Warning: HTTP2.0 is disabled for WebApp '{web_app.name}' which may impact the performance benefits provided by the protocol.")
 
                         else:
                             #print(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
-                            details_dict["Details"].append(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
+                            details_dict["Details"].append(f"HTTP2.0 is Enabled for WebApp '{web_app.name}'")
 
                         if not float(web_app_configuration.min_tls_version) <= 1.2:
                             print(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                             sentences2.append(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                             sentences3.append(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
-                            details_dict["Details"].append(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology and encryption should be set with the latest version of TLS and here it is {web_app_configuration.min_tls_version}.")
+                            details_dict["Details"].append(f"Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology and encryption should be set with the latest version of TLS and here it is {web_app_configuration.min_tls_version}.")
 
                         else:
                             #print(f"\t> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
                             sentences2.append(f"\t> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
-                            details_dict["Details"].append(f"> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
+                            details_dict["Details"].append(f"TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
 
                         # if not web_app_configuration.ftps_state == "FtpsOnly":
                         #     print(f"\t> Vulnerability: If FTPS state is not set to 'FtpsOnly', it may expose data in transit to security risks for WebApp '{web_app.name}'.")
@@ -954,12 +963,12 @@ try:
                             print(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                             sentences2.append(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                             sentences3.append(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
-                            details_dict["Details"].append(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
+                            details_dict["Details"].append(f"Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
 
                         else:
                             #print(f"\t> Public Network access is disabled to the WebApp '{web_app.name}'")
                             sentences2.append(f"\t> Public Network access is disabled to the WebApp '{web_app.name}'")
-                            details_dict["Details"].append(f"> Public Network access is disabled to the WebApp '{web_app.name}'")
+                            details_dict["Details"].append(f"Public Network access is disabled to the WebApp '{web_app.name}'")
 
                         if web_app_configuration.managed_service_identity_id is None:
                             print(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
@@ -967,13 +976,13 @@ try:
                             sentences2.append(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
                             sentences2.append(f"\t> App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
                             sentences3.append(f"> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
-                            details_dict["Details"].append(f"> Vulnerability: Managed Service Identity is not configured for WebApp '{web_app.name}' which leaves it potentially insecure.")
+                            details_dict["Details"].append(f"Vulnerability: Managed Service Identity is not configured for WebApp '{web_app.name}' which leaves it potentially insecure.")
                             #details_dict["Details"].append(f"\t> App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
 
                         else:
                             #print(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}'")
                             sentences2.append(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}',which is {web_app_configuration.managed_service_identity_id}")
-                            details_dict["Details"].append(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}' which is {web_app_configuration.managed_service_identity_id}")
+                            details_dict["Details"].append(f"Managed Service Identities is Enabled for WebApp '{web_app.name}' which is {web_app_configuration.managed_service_identity_id}")
 
                         if (
                             not auth_settings.enabled
@@ -1104,6 +1113,8 @@ try:
             }
 
             writer.writerow(data)
+            writer = csv.writer(file)
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
 
 
@@ -1114,7 +1125,7 @@ try:
         print(f"\nDetecting Vulnerabilities in Storage Accounts...")
         total_checks = 0
         detected_count = 0
-        csv_file_path = "azure_HTML_report.csv"
+        csv_file_path = "azure_HTML_report2.csv"
         datetime_now = datetime.now()
         sentences1 = [] # Details of count
         sentences2 = [] # All details for HTML report
@@ -1125,8 +1136,8 @@ try:
         details_dict = {
         "Subscription Name": "",
         "Subscription ID": "",
-        "Total Storage Accounts Checked": 0,
-        "Total Detected Storage Accounts": 0,
+        "Total Web Apps Checked": 0,
+        "Total Detected Web Apps": 0,
         "Details": []  # Details will be a list of sentences
         }
 
@@ -1145,71 +1156,71 @@ try:
                     # print("\n1. Storage Account",storage_account)
                     total_checks += 1
                     print(f"\n")# After every storage account
-                    details_dict["Details"].append(f"Checking in Storage Account: {storage_account.name}")
+                    details_dict["Details"].append(f"\nStorage_Account: {storage_account.name}")
 
                     # Ensure that 'Secure transfer required' is set to 'Enabled'
                     if not storage_account.enable_https_traffic_only:
                         print(f"\n\t> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                         sentences2.append(f"\t1. Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                         sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
-                        details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                        details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
 
                     else:
                         #print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
                         sentences2.append(f"\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
-                        details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
+                        details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
 
                     #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
                     if not storage_account.encryption.require_infrastructure_encryption:
                         print(f"\t> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                         sentences2.append(f"\t2. Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                         sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
-                        details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                        details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
 
                     else:
                         #print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
                         sentences2.append(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
-                        details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
+                        details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
 
                     #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
                     if storage_account.allow_blob_public_access:
                         print(f"\t> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                         sentences2.append(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                         sentences3.append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
-                        details_dict["Details"].append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                        details_dict["Details"].append(f"Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
 
                     else:
                         #print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
                         sentences2.append(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
-                        details_dict["Details"].append(f"> The Storage Account '{storage_account.name}'with blob containers has denied public access.")
+                        details_dict["Details"].append(f"The Storage Account '{storage_account.name}'with blob containers has denied public access.")
 
                     ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
                     if storage_account.public_network_access:
                         print(f"\t> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
                         sentences2.append(f"\t4. Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
                         sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
-                        details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                        details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
 
                     else:
                         #print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
                         sentences2.append(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
-                        details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has denied the public traffic.")
+                        details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has denied the public traffic.")
 
                     #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
                     if not storage_account.minimum_tls_version == 'TLS1_2':
                         print(f"\t> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                         sentences2.append(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                         sentences3.append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
-                        details_dict["Details"].append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                        details_dict["Details"].append(f"Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
 
                     else:
                         #print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
                         sentences2.append(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
-                        details_dict["Details"].append(f"> TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+                        details_dict["Details"].append(f"TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
 
-                    sentences2.append(f"\n")
-                    sentences3.append(f"\n")# After every storage account
-                    details_dict["Details"].append(f"\n")
+                    # sentences2.append(f"\n")
+                    # sentences3.append(f"\n")# After every storage account
+                    # details_dict["Details"].append(f"\n")
 
                     if (
                         not storage_account.enable_https_traffic_only
@@ -1330,6 +1341,8 @@ try:
             }
 
             writer.writerow(data)
+            writer = csv.writer(file)
+            writer.writerow(["-------------------------------------------------------------------------------------------------------------------------------------------------------------------"])
 
 
 
@@ -1339,7 +1352,7 @@ try:
     def check_key_vault_rbac(subscription_ids): 
         total_key_vault_count = 0
         detected_key_vault_count = 0
-        csv_file_path = "azure_HTML_report.csv"
+        csv_file_path = "azure_HTML_report2.csv"
         datetime_now = datetime.now()
         sentences1 = [] # Details of count
         sentences2 = [] # All details for HTML report
@@ -1369,57 +1382,58 @@ try:
 
                 for resource_group in resource_groups:
                     keyvaults = keyvault_client.vaults.list_by_resource_group(resource_group.name)
+                    details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
                     for keyvault in keyvaults:
                         total_key_vault_count += 1
                         print(f"\n") #after every key vault
                         sentences2.append(f"\n")
                         sentences3.append(f"\n")
-                        details_dict["Details"].append(f"\n")
+                        # details_dict["Details"].append(f"\n")
 
                         # Check if RBAC is enabled
                         if keyvault.properties.enable_rbac_authorization:
                             #print(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
                             sentences2.append(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
-                            details_dict["Details"].append(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
                         else:
                             print(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
                             sentences2.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
                             sentences3.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
-                            details_dict["Details"].append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
+                            details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
 
                         # Check if key rotation settings are present 
                         if keyvault.properties.enable_soft_delete:
                             #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
                             sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
-                            details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
                         else:
                             print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
                             sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
                             sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
-                            details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
+                            details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
 
                         # Check if Private Endpoint connections are present
                         if keyvault.properties.private_endpoint_connections:
                             #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
                             sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
-                            details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
                         else:
                             print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
                             sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
                             sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
-                            details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
+                            details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
 
                         # Check if automated recovery is enabled
                         if keyvault.properties.enable_soft_delete and keyvault.properties.enable_purge_protection:
                             #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
                             sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
-                            details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
                         else:
                             print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
                             sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
                             sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
-                            details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
+                            details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
 
                         # Check if Key Vault allows public network access
                         network_acls = keyvault.properties.network_acls
@@ -1427,11 +1441,11 @@ try:
                             print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                             sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                             sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
-                            details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
+                            details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                         else:
                             #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
                             sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
-                            details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
 
                         # Fetch role assignments for the Key Vault using AuthorizationManagementClient
                         authorization_client = AuthorizationManagementClient(credential, subscription_id)
@@ -1446,12 +1460,12 @@ try:
                         if custom_owner_role_present:
                             #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
                             sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
-                            details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
+                            details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
                         else:
                             print(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
                             sentences2.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
                             sentences3.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
-                            details_dict["Details"].append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
+                            details_dict["Details"].append(f"Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
 
     #                    """Check if expiration date is set to be 90 days or less from creation for all secrets in non-RBAC Key Vaults across specified subscriptions."""
     #                 # Construct the Key Vault URL

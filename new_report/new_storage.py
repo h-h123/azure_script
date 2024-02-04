@@ -83,7 +83,7 @@ def check_storage_account_vulnerabilities(subscription_ids):
     print(f"\nDetecting Vulnerabilities in Storage Accounts...")
     total_checks = 0
     detected_count = 0
-    csv_file_path = "azure_storage_account_HTML_report.csv"
+    csv_file_path = "azure_HTML_report2.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of count
     sentences2 = [] # All details for HTML report
@@ -114,71 +114,71 @@ def check_storage_account_vulnerabilities(subscription_ids):
                 # print("\n1. Storage Account",storage_account)
                 total_checks += 1
                 print(f"\n")# After every storage account
-                details_dict["Details"].append(f"Checking in Storage Account: {storage_account.name}")
+                details_dict["Details"].append(f"\nStorage_Account: {storage_account.name}")
 
                 # Ensure that 'Secure transfer required' is set to 'Enabled'
                 if not storage_account.enable_https_traffic_only:
                     print(f"\n\t> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                     sentences2.append(f"\t1. Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
                     sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
-                    details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
+                    details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' has not enforced Secure transfer (HTTPS).")
 
                 else:
                     #print(f"\n\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
                     sentences2.append(f"\t1. The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
-                    details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
+                    details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has enforced Secure transfer (HTTPS).")
 
                 #Ensure that ‘Enable Infrastructure Encryption’ for Each Storage Account in Azure Storage is Set to ‘enabled’
                 if not storage_account.encryption.require_infrastructure_encryption:
                     print(f"\t> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                     sentences2.append(f"\t2. Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
                     sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
-                    details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
+                    details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' has not enabled Infrastructure Encryption.")
 
                 else:
                     #print(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
                     sentences2.append(f"\t2. The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
-                    details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
+                    details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has enabled Infrastructure Encryption.")
 
                 #Ensure that 'Public access level' is disabled for storage accounts with blob containers 
                 if storage_account.allow_blob_public_access:
                     print(f"\t> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                     sentences2.append(f"\t3. Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
                     sentences3.append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
-                    details_dict["Details"].append(f"> Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
+                    details_dict["Details"].append(f"Vulnerability : The Storage Account '{storage_account.name}' with blob containers has allowed public access.")
 
                 else:
                     #print(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
                     sentences2.append(f"\t3. The Storage Account '{storage_account.name}'with blob containers has denied public access.")
-                    details_dict["Details"].append(f"> The Storage Account '{storage_account.name}'with blob containers has denied public access.")
+                    details_dict["Details"].append(f"The Storage Account '{storage_account.name}'with blob containers has denied public access.")
 
                 ## Ensure Default Network Access Rule for Storage Accounts is Set to Deny
                 if storage_account.public_network_access:
                     print(f"\t> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
                     sentences2.append(f"\t4. Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
                     sentences3.append(f"> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
-                    details_dict["Details"].append(f"> Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
+                    details_dict["Details"].append(f"Vulnerability: The Storage Account '{storage_account.name}' is allowing public traffic.")
 
                 else:
                     #print(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
                     sentences2.append(f"\t4. The Storage Account '{storage_account.name}' has denied the public traffic.")
-                    details_dict["Details"].append(f"> The Storage Account '{storage_account.name}' has denied the public traffic.")
+                    details_dict["Details"].append(f"The Storage Account '{storage_account.name}' has denied the public traffic.")
 
                 #Ensure the "Minimum TLS version" for storage accounts is set to "Version 1.2"
                 if not storage_account.minimum_tls_version == 'TLS1_2':
                     print(f"\t> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                     sentences2.append(f"\t5. Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
                     sentences3.append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
-                    details_dict["Details"].append(f"> Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
+                    details_dict["Details"].append(f"Warning: The Storage Account '{storage_account.name}' uses an outdated TLS version ({storage_account.minimum_tls_version}). Update to TLS Version 1.2 for enhanced security.")
 
                 else:
                     #print(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
                     sentences2.append(f"\t5. TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
-                    details_dict["Details"].append(f"> TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
+                    details_dict["Details"].append(f"TLS version for The Storage Account '{storage_account.name}' is up to date: {storage_account.minimum_tls_version}.")
 
-                sentences2.append(f"\n")
-                sentences3.append(f"\n")# After every storage account
-                details_dict["Details"].append(f"\n")
+                # sentences2.append(f"\n")
+                # sentences3.append(f"\n")# After every storage account
+                # details_dict["Details"].append(f"\n")
 
                 if (
                     not storage_account.enable_https_traffic_only

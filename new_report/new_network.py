@@ -136,7 +136,7 @@ def check_network(subscription_ids):
     detected_nsg_resource_groups = []
     detected_network_watcher_names = []
     detected_network_watcher_resource_groups = []
-    csv_file_path = "azure_HTML_report.csv"
+    csv_file_path = "azure_HTML_report2.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of count
     sentences2 = [] # All details for HTML report
@@ -180,21 +180,21 @@ def check_network(subscription_ids):
                         #print(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
                         sentences2.append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
                         sentences3.append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
-                        details_dict["Details"].append(f"\nChecking NSG Vulnerabilities in '{resource_group.name}' Resource Group:\t")
+                        details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
 
                         if not nsg:
                             #print(f"No NSGs found in the '{resource_group.name}' resource group.")
                             sentences2.append(f"No NSGs found in the '{resource_group.name}' resource group.")
                         #    sentences3.append(f"No NSGs found in the '{resource_group.name}' resource group.")
-                            details_dict["Details"].append(f"No NSGs found in the '{resource_group.name}' resource group.")
+                            # details_dict["Details"].append(f"No NSGs found in the '{resource_group.name}' resource group.")
 
                         else:
                             total_nsg_checks += 1
                             #print(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
                             sentences2.append(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
                         #    sentences3.append(f"\tNSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
-                            details_dict["Details"].append(f"NSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
+                            # details_dict["Details"].append(f"NSG named '{nsg.name}'found in the '{resource_group.name}' resource group.")
 
                         allowed_protocols = {'ssh', 'http', 'rdp', 'https'}
                         allowed_rules = [find_security_rule_by_name(nsg, protocol) for protocol in allowed_protocols]
@@ -207,7 +207,7 @@ def check_network(subscription_ids):
                             sentences2.append(f"\tVulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
                             sentences3.append(f"\tVulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed (Consider Restricting)")
                             
-                            details_dict["Details"].append(f"> Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed in the NSG '{nsg.name}'in the resource group '{resource_group.name}'.(Consider Restricting)")
+                            details_dict["Details"].append(f"Vulnerability: Multiple rules of SSH, HTTP, RDP, HTTPS are allowed in the NSG '{nsg.name}'in the resource group '{resource_group.name}'(Consider Restricting)")
 
                             print(f"\tAllowed Protocols:")
                             sentences2.append(f"\tAllowed Protocols:")
@@ -232,7 +232,7 @@ def check_network(subscription_ids):
                                 print(f"\tWarning: Inbound SSH access is allowed.")
                                 sentences2.append(f"\tWarning: Inbound SSH access is allowed.")
                                 sentences3.append(f"\tWarning: Inbound SSH access is allowed.")
-                                details_dict["Details"].append(f"> Warning: Inbound SSH access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                details_dict["Details"].append(f"Warning: Inbound SSH access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
                             if udp_detected:
                                 detected_nsg_count += 1
@@ -240,7 +240,7 @@ def check_network(subscription_ids):
                                 print(f"\tWarning: Inbound UDP access is allowed.")
                                 sentences2.append(f"\tWarning: Inbound UDP access is allowed.")
                                 sentences3.append(f"\tWarning: Inbound UDP access is allowed.")
-                                details_dict["Details"].append(f"> Warning: Inbound UDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                details_dict["Details"].append(f"Warning: Inbound UDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
 
                             if rdp_detected:
@@ -249,7 +249,7 @@ def check_network(subscription_ids):
                                 print(f"\tWarning: Inbound RDP access is allowed.")
                                 sentences2.append(f"\tWarning: Inbound RDP access is allowed.")
                                 sentences3.append(f"\tWarning: Inbound RDP access is allowed.")
-                                details_dict["Details"].append(f"> Warning: Inbound RDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
+                                details_dict["Details"].append(f"Warning: Inbound RDP access is allowed for the NSG '{nsg.name}'in the resource group '{resource_group.name}'.")
 
 
 
@@ -279,35 +279,35 @@ def check_network(subscription_ids):
                         #print(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
                         sentences2.append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
                         sentences3.append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
-                        details_dict["Details"].append(f"\nChecking Network Watchers in '{resource_group.name}' Resource Group:")
+                        details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
                         if not network_watcher:
                             print(f"\tVulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                             sentences2.append(f"\t Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                             sentences3.append(f"\t Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
-                            details_dict["Details"].append(f"> Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
+                            details_dict["Details"].append(f"Vulnerability: No Network Watchers found in the '{resource_group.name}' resource group. Network Watcher is disabled.")
                         else:
                             total_network_watcher_checks += 1
                             #print(f"\t1. Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
                             sentences2.append(f"\t Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
-                            details_dict["Details"].append(f"> Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
+                            details_dict["Details"].append(f"Network Watcher named '{network_watcher.name}' is Enabled in the '{resource_group.name}' resource group.")
 
                         # Check if Network Watcher is  provisioned successfully
                         if network_watcher.provisioning_state.lower() == 'succeeded':
                             #print(f"\t2. Network Watcher named '{network_watcher.name}' is provisioned successfully.")
                             sentences2.append(f"\t Network Watcher named '{network_watcher.name}' is provisioned successfully.")
-                            details_dict["Details"].append(f"> Network Watcher named '{network_watcher.name}' is provisioned successfully.")
+                            details_dict["Details"].append(f"Network Watcher named '{network_watcher.name}' is provisioned successfully.")
                         else:
                             detected_network_watcher_count += 1
                             print(f"\tVulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
                             sentences2.append(f"\t Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
                             sentences3.append(f"\t Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
-                            details_dict["Details"].append(f"\t> Vulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
+                            details_dict["Details"].append(f"\tVulnerability: Network Watcher named '{network_watcher.name}' provisioning is not in a successful state.")
 
                         if network_watcher and network_watcher.provisioning_state.lower() == 'succeeded':
                             sentences2.append(f"\tNo vulnerability Found !")
                             sentences3.append(f"\tNo vulnerability Found !")
-                            details_dict["Details"].append(f"\tNo vulnerability Found !")
+                            # details_dict["Details"].append(f"\tNo vulnerability Found !")
 
                         # Recording information for CSV
                         detected_network_watcher_names.append(network_watcher.name)

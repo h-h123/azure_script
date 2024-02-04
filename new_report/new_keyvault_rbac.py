@@ -91,7 +91,7 @@ def new_Report_keyvault_rbac_sentences1and2_save_to_csv_for_html_report(csv_file
 def check_key_vault_rbac(subscription_ids): 
     total_key_vault_count = 0
     detected_key_vault_count = 0
-    csv_file_path = "azure_HTML_report.csv"
+    csv_file_path = "azure_HTML_report2.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of count
     sentences2 = [] # All details for HTML report
@@ -121,57 +121,58 @@ def check_key_vault_rbac(subscription_ids):
 
             for resource_group in resource_groups:
                 keyvaults = keyvault_client.vaults.list_by_resource_group(resource_group.name)
+                details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
 
                 for keyvault in keyvaults:
                     total_key_vault_count += 1
                     print(f"\n") #after every key vault
                     sentences2.append(f"\n")
                     sentences3.append(f"\n")
-                    details_dict["Details"].append(f"\n")
+                    # details_dict["Details"].append(f"\n")
 
                     # Check if RBAC is enabled
                     if keyvault.properties.enable_rbac_authorization:
                         #print(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
                         sentences2.append(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
-                        details_dict["Details"].append(f"\n> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has RBAC enabled.")
                     else:
                         print(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
                         sentences2.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
                         sentences3.append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
-                        details_dict["Details"].append(f"\n> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
+                        details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have RBAC enabled.")
 
                     # Check if key rotation settings are present 
                     if keyvault.properties.enable_soft_delete:
                         #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
                         sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
-                        details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has key rotation enabled.")
                     else:
                         print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
                         sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
                         sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
-                        details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
+                        details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have key rotation enabled.")
 
                     # Check if Private Endpoint connections are present
                     if keyvault.properties.private_endpoint_connections:
                         #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
                         sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
-                        details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has Private Endpoint connections.")
                     else:
                         print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
                         sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
                         sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
-                        details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
+                        details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have Private Endpoint connections.")
 
                     # Check if automated recovery is enabled
                     if keyvault.properties.enable_soft_delete and keyvault.properties.enable_purge_protection:
                         #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
                         sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
-                        details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has automated recovery enabled.")
                     else:
                         print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
                         sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
                         sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
-                        details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
+                        details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have automated recovery enabled.")
 
                     # Check if Key Vault allows public network access
                     network_acls = keyvault.properties.network_acls
@@ -179,11 +180,11 @@ def check_key_vault_rbac(subscription_ids):
                         print(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                         sentences2.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                         sentences3.append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
-                        details_dict["Details"].append(f"> Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
+                        details_dict["Details"].append(f"Vulnerability: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' allows public network access.")
                     else:
                         #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
                         sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
-                        details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not allow public network access.")
 
                     # Fetch role assignments for the Key Vault using AuthorizationManagementClient
                     authorization_client = AuthorizationManagementClient(credential, subscription_id)
@@ -198,12 +199,12 @@ def check_key_vault_rbac(subscription_ids):
                     if custom_owner_role_present:
                         #print(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
                         sentences2.append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
-                        details_dict["Details"].append(f"> Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
+                        details_dict["Details"].append(f"Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' has a custom subscription owner role assigned.")
                     else:
                         print(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
                         sentences2.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
                         sentences3.append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
-                        details_dict["Details"].append(f"> Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
+                        details_dict["Details"].append(f"Warning: Azure Key Vault '{keyvault.name}' in Resource Group '{resource_group.name}' does not have a custom subscription owner role assigned.")
 
 #                    """Check if expiration date is set to be 90 days or less from creation for all secrets in non-RBAC Key Vaults across specified subscriptions."""
 #                 # Construct the Key Vault URL

@@ -95,7 +95,7 @@ def check_unsecured_vm_instances(subscription_ids):
     detected_vm_count = 0
     total_disk_checked_count = 0
     detected_disk_count = 0
-    csv_file_path = "azure_HTML_report.csv"
+    csv_file_path = "azure_HTML_report2.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of counts
     sentences2 = [] # All details for HTML report
@@ -135,7 +135,7 @@ def check_unsecured_vm_instances(subscription_ids):
                 print(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                 sentences2.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
                 sentences3.append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
-                details_dict["Details"].append(f"\nChecking for VM '{vm.name}' in the Resource group '{resource_group_of_vm}'...")
+                details_dict["Details"].append(f"\nResource_Group:{resource_group_of_vm}")
 
                 total_vm_checked_count += 1
 
@@ -174,11 +174,11 @@ def check_unsecured_vm_instances(subscription_ids):
                     detected_vm_count += 1
                     insecure_vms.append(vm.name)
                     unsecured = True
-                    print(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
-                    sentences2.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                    print(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                    sentences2.append(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
                     sentences2.append(f"\tRemediation - Enable just-in-time access control to protect your VM from internet-based brute-force attacks.")
-                    sentences3.append(f"\t> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
-                    details_dict["Details"].append(f"> VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                    sentences3.append(f"\t> Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
+                    details_dict["Details"].append(f"Vulnerability: VM '{vm.name}' is Unsecured (Reason - It has overly-permissive inbound rules for management ports in Network Security Group of VM and Open remote management ports are exposing VM to a high level of risk from Internet-based attack.)")
 
 
         ####################################################################################
@@ -194,7 +194,7 @@ def check_unsecured_vm_instances(subscription_ids):
                     print(f"\nChecking for Disk '{disk.name}' in RG '{RG_of_disk}'...")
                     sentences2.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
                     sentences3.append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
-                    details_dict["Details"].append(f"\nChecking for Disk '{disk.name}' in RG - {RG_of_disk}...")
+                    details_dict["Details"].append(f"\nResource_Group:{RG_of_disk}")
 
 
                     # check_disk_vulnerability_warning_scenarios(disk)
@@ -206,13 +206,13 @@ def check_unsecured_vm_instances(subscription_ids):
                     if disk.disk_state == 'Attached':
                         #print(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
                         sentences2.append(f"\t> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
-                        details_dict["Details"].append(f"> The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
+                        details_dict["Details"].append(f"The disk '{disk.name}' is attached to the virtual machine '{disk_attached_vm_name}'.")
 
                     else:
                         print(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}'is not attached to any VM.")
                         sentences2.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
                         sentences3.append(f"\t> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
-                        details_dict["Details"].append(f"> Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
+                        details_dict["Details"].append(f"Warning: The Disk {disk.name} in the RG '{RG_of_disk}' is not attached to any VM.")
 
                     # Data Access Auth Mode
                     if disk.data_access_auth_mode is None:
@@ -223,11 +223,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Unauthorized users may gain access to sensitive disk data, leading to potential data breaches.")
                         sentences2.append(f"\tRecommendation: Ensure strong authentication methods, such as Azure AD/ Entra ID credentials, are enforced.")
                         sentences3.append(f"\t> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
-                        details_dict["Details"].append(f"> Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"Vulnerability: Data Access Authentication Mode is configured with weak or no authentication for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
                         sentences2.append(f"\t> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
-                        details_dict["Details"].append(f"> Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
+                        details_dict["Details"].append(f"Data Access Authentication Mode is configured (Secure) for disk '{disk.name}'")
 
 
                     # Encryption Settings
@@ -235,11 +235,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         print(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                         sentences2.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                         sentences3.append(f"\t> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
-                        details_dict["Details"].append(f"> Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"Vulnerability: Encryption settings are not configured for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
                         sentences2.append(f"\t> Encryption settings for the disk '{disk.name}' are configured.")
-                        details_dict["Details"].append(f"> Encryption settings for the disk '{disk.name}' are configured.")
+                        details_dict["Details"].append(f"Encryption settings for the disk '{disk.name}' are configured.")
 
                     # Optimized for Frequent Attach
                     if disk.optimized_for_frequent_attach and 'sensitive_data' in disk.tags:
@@ -250,13 +250,13 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Frequent attaching may expose the disk to unintended access, increasing the risk of data compromise.")
                         sentences2.append(f"\tRecommendation: Assess the need for frequent attachment and optimize performance accordingly. Consider encryption for sensitive data.")
                         sentences3.append(f"\t> Warning: Disk '{disk.name}' is optimized for frequent attachment, but it contains sensitive data.")
-                        details_dict["Details"].append(f"> Warning: Disk '{disk.name}' is optimized for frequent attachment but it contains sensitive data.")
+                        details_dict["Details"].append(f"Warning: Disk '{disk.name}' is optimized for frequent attachment but it contains sensitive data.")
                     else:
                         #print(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                         #print(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")
                         sentences2.append(f"\t> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
                         sentences2.append(f"\tExplanation: Frequent attachment optimization is not applicable, and the disk does not pose a risk of unintended access or data compromise.")    
-                        details_dict["Details"].append(f"> The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
+                        details_dict["Details"].append(f"The disk '{disk.name}' is not configured for frequent attachment optimization or does not contain sensitive data.")
 
                     # Bursting Enabled Time
                     if disk.bursting_enabled_time and disk.bursting_enabled_time.startswith("peak_hours"):
@@ -267,11 +267,11 @@ def check_unsecured_vm_instances(subscription_ids):
                         sentences2.append(f"\tRisk: Bursting might consume additional resources, impacting overall system performance during peak hours.")
                         sentences2.append(f"\tRecommendation: Schedule bursting during non-peak hours and monitor resource utilization to avoid performance degradation.")
                         sentences3.append(f"\t> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
-                        details_dict["Details"].append(f"> Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
+                        details_dict["Details"].append(f"Warning: Bursting is currently enabled during peak operational hours for the disk '{disk.name}'.")
                     else:
                         #print(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
                         sentences2.append(f"\t> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
-                        details_dict["Details"].append(f"> Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
+                        details_dict["Details"].append(f"Bursting in the disk '{disk.name}' is either not enabled or not configured for peak operational hours.")
 
 
                     # Check if all conditions are met before flagging the Disk as unsecured
@@ -280,7 +280,7 @@ def check_unsecured_vm_instances(subscription_ids):
                         #print(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                         sentences2.append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
                         #sentences3.append(f"\n\tDisk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
-                        details_dict["Details"].append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
+                        #details_dict["Details"].append(f"\n\t* Disk '{disk.name}' is Vulnerable (Reason - Encryption settings are not configured & Data Access Authentication Mode is configured with weak or no authentication)")
 
             # Printing Information
             for sub in subscriptions:

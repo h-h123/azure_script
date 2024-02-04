@@ -91,7 +91,7 @@ def check_web_app(subscription_ids):
     
     total_web_apps_checked = 0
     total_detected_web_apps = 0
-    csv_file_path = "azure_web_app_HTML_report.csv"
+    csv_file_path = "azure_HTML_report2.csv"
     datetime_now = datetime.now()
     sentences1 = [] # Details of count
     sentences2 = [] # All details for HTML report
@@ -122,7 +122,7 @@ def check_web_app(subscription_ids):
             for resource_group in resource_groups:
                 web_apps = webapp_client.web_apps.list_by_resource_group(resource_group.name)
                 sentences2.append(f"\nIn Resource Group: {resource_group.name}")
-                details_dict["Details"].append(f"\nIn Resource Group: {resource_group.name}")
+                details_dict["Details"].append(f"\nResource_Group:{resource_group.name}")
                 
                 for web_app in web_apps:
                     total_web_apps_checked += 1
@@ -137,7 +137,7 @@ def check_web_app(subscription_ids):
                         #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                         sentences2.append(f"\n\t> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
                         sentences2.append(f"\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
-                        details_dict["Details"].append(f"> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'.")
+                        details_dict["Details"].append(f"Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'.")
                         #details_dict["Details"].append(f"\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
 
                         sentences3.append(f"> Vulnerability: App Service Authentication Disabled for WebApp '{web_app.name}'")
@@ -146,7 +146,7 @@ def check_web_app(subscription_ids):
                         #print(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
                         sentences2.append(f"\n\t> App Service Authentication Enabled for WebApp '{web_app.name}'")
                         sentences2.append(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
-                        details_dict["Details"].append(f"> App Service Authentication Enabled for WebApp '{web_app.name}'.")
+                        details_dict["Details"].append(f"App Service Authentication Enabled for WebApp '{web_app.name}'.")
                         #details_dict["Details"].append(f"\n\tDescription : Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching the API app, or authenticate those that have tokens before they reach the API app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.")
 
                     # if auth_settings.aad_claims_authorization is None:
@@ -161,22 +161,22 @@ def check_web_app(subscription_ids):
                         print(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                         sentences2.append(f"\t> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                         sentences3.append(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
-                        details_dict["Details"].append(f"> Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
+                        details_dict["Details"].append(f"Vulnerability: Unauthenticated Client Action for WebApp '{web_app.name}' is set to Allow Anonymous")
                     else:
                         #print(f"\t> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
                         sentences2.append(f"\t> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous")
-                        details_dict["Details"].append(f"> Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous.")
+                        details_dict["Details"].append(f"Unauthenticated Client Action for WebApp '{web_app.name}' is not set to Allow Anonymous.")
 
                     if not web_app_configuration.auto_heal_enabled:
                         print(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                         sentences2.append(f"\t> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
                         sentences3.append(f"> Warning: If auto-healing is disabled, WebApp '{web_app.name}' might not recover automatically from failures, leading to potential downtime.")
-                        details_dict["Details"].append(f"> Warning: If auto-healing is disabled then WebApp '{web_app.name}' might not recover automatically from failures which leads to potential downtime.")
+                        details_dict["Details"].append(f"Warning: If auto-healing is disabled then WebApp '{web_app.name}' might not recover automatically from failures which leads to potential downtime.")
 
                     else:
                         #print(f"\t> Auto heal feature is enabled for WebApp '{web_app.name}'")
                         sentences2.append(f"\t> Auto heal feature is enabled for WebApp '{web_app.name}'")
-                        details_dict["Details"].append(f"> Auto heal feature is enabled for WebApp '{web_app.name}'")
+                        details_dict["Details"].append(f"Auto heal feature is enabled for WebApp '{web_app.name}'")
 
                     # if  web_app_configuration.http_logging_enabled:
                     #     print(f"\t> Warning: If HTTP logging is disabled, it may hinder the ability to monitor and troubleshoot issues for WebApp '{web_app.name}'.")
@@ -190,23 +190,23 @@ def check_web_app(subscription_ids):
                         print(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                         sentences2.append(f"\t> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
                         sentences3.append(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}', it may impact the performance benefits provided by the protocol.")
-                        details_dict["Details"].append(f"> Warning: HTTP2.0 is disabled for WebApp '{web_app.name}' which may impact the performance benefits provided by the protocol.")
+                        details_dict["Details"].append(f"Warning: HTTP2.0 is disabled for WebApp '{web_app.name}' which may impact the performance benefits provided by the protocol.")
 
                     else:
                         #print(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
                         sentences2.append(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
-                        details_dict["Details"].append(f"\t> HTTP2.0 is Enabled for WebApp '{web_app.name}'")
+                        details_dict["Details"].append(f"HTTP2.0 is Enabled for WebApp '{web_app.name}'")
 
                     if not float(web_app_configuration.min_tls_version) <= 1.2:
                         print(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                         sentences2.append(f"\t> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
                         sentences3.append(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS.")
-                        details_dict["Details"].append(f"> Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology and encryption should be set with the latest version of TLS and here it is {web_app_configuration.min_tls_version}.")
+                        details_dict["Details"].append(f"Warning: The TLS (Transport Layer Security) protocol for WebApp '{web_app.name}' secures transmission of data over the internet using standard encryption technology and encryption should be set with the latest version of TLS and here it is {web_app_configuration.min_tls_version}.")
 
                     else:
                         #print(f"\t> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
                         sentences2.append(f"\t> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
-                        details_dict["Details"].append(f"> TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
+                        details_dict["Details"].append(f"TLS (Transport Layer Security) protocol version for WebApp '{web_app.name}' is {web_app_configuration.min_tls_version}")
 
                     # if not web_app_configuration.ftps_state == "FtpsOnly":
                     #     print(f"\t> Vulnerability: If FTPS state is not set to 'FtpsOnly', it may expose data in transit to security risks for WebApp '{web_app.name}'.")
@@ -220,12 +220,12 @@ def check_web_app(subscription_ids):
                         print(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                         sentences2.append(f"\t> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
                         sentences3.append(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
-                        details_dict["Details"].append(f"> Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
+                        details_dict["Details"].append(f"Vulnerability: Enabling public network access may expose the WebApp '{web_app.name}' to potential external threats.")
 
                     else:
                         #print(f"\t> Public Network access is disabled to the WebApp '{web_app.name}'")
                         sentences2.append(f"\t> Public Network access is disabled to the WebApp '{web_app.name}'")
-                        details_dict["Details"].append(f"> Public Network access is disabled to the WebApp '{web_app.name}'")
+                        details_dict["Details"].append(f"Public Network access is disabled to the WebApp '{web_app.name}'")
 
                     if web_app_configuration.managed_service_identity_id is None:
                         print(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
@@ -233,13 +233,13 @@ def check_web_app(subscription_ids):
                         sentences2.append(f"\t> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
                         sentences2.append(f"\t> App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
                         sentences3.append(f"> Vulnerability: Managed Service Identity not configured for WebApp '{web_app.name}', leaving it potentially insecure.")
-                        details_dict["Details"].append(f"> Vulnerability: Managed Service Identity is not configured for WebApp '{web_app.name}' which leaves it potentially insecure.")
+                        details_dict["Details"].append(f"Vulnerability: Managed Service Identity is not configured for WebApp '{web_app.name}' which leaves it potentially insecure.")
                         #details_dict["Details"].append(f"\t> App Service provides a highly scalable, self-patching web hosting service in Azure. It also provides a managed identity for apps & here for WebApp '{web_app.name}', which is a turn-key solution for securing access to Azure SQL Database and other Azure services.")
 
                     else:
                         #print(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}'")
                         sentences2.append(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}',which is {web_app_configuration.managed_service_identity_id}")
-                        details_dict["Details"].append(f"\t> Managed Service Identities is Enabled for WebApp '{web_app.name}' which is {web_app_configuration.managed_service_identity_id}")
+                        details_dict["Details"].append(f"Managed Service Identities is Enabled for WebApp '{web_app.name}' which is {web_app_configuration.managed_service_identity_id}")
 
                     if (
                         not auth_settings.enabled
